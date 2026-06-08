@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-white mb-2">AI-Powered Resume Tailoring</h1>
+        <p class="text-slate-400">Upload your resume, paste a job description, and get an AI-tailored version</p>
+    </div>
+    
+    <!-- Section A: Two Cards -->
+    <div class="grid md:grid-cols-2 gap-8 mb-8">
+        <!-- Left Card: Upload -->
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                Upload Your Resume Template
+            </h2>
+            
+            <!-- Upload Area -->
+            <div id="upload-area" class="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center transition-all cursor-pointer hover:border-indigo-500 hover:bg-slate-700/50">
+                <input type="file" id="resume-file" accept=".pdf" class="hidden">
+                
+                <div id="upload-placeholder">
+                    <svg class="w-16 h-16 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="text-slate-400 mb-2">Drag & drop your PDF resume here</p>
+                    <p class="text-slate-500 text-sm">or click to browse</p>
+                </div>
+                
+                <!-- Upload Success -->
+                <div id="upload-success" class="hidden">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <p id="filename" class="text-emerald-400 font-medium mb-1"></p>
+                    <p id="page-info" class="text-slate-400 text-sm mb-4"></p>
+                    <p id="style-session-note" class="text-xs text-slate-500 mb-4">Uploaded PDF style is captured for this run only and the source resume is cleared after generation.</p>
+                    
+                    <!-- Preview -->
+                    <div id="pdf-preview-container" class="mt-4 rounded overflow-hidden border border-slate-600">
+                        <canvas id="pdf-preview-canvas" class="w-full"></canvas>
+                    </div>
+                    
+                    <button id="upload-again" class="mt-4 text-indigo-400 hover:text-indigo-300 text-sm">
+                        Upload different file
+                    </button>
+                </div>
+                
+                <!-- Upload Error -->
+                <div id="upload-error" class="hidden">
+                    <div class="w-12 h-12 bg-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    <p id="error-message" class="text-rose-400"></p>
+                    <button id="retry-upload" class="mt-4 text-indigo-400 hover:text-indigo-300 text-sm">
+                        Try again
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Uploaded Sections -->
+            <div id="sections-detected" class="mt-4 hidden">
+                <p class="text-sm text-slate-400 mb-2">Sections detected:</p>
+                <div id="sections-list" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+        
+        <!-- Right Card: Job Description -->
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Paste Job Description
+            </h2>
+            
+            <textarea 
+                id="job-description" 
+                class="w-full h-80 bg-slate-900 border border-slate-600 rounded-lg p-4 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+                placeholder="Paste the complete job description here. More detail = better results.
+
+Example:
+Software Engineer
+We are looking for a Software Engineer to join our team...
+
+Requirements:
+- 3+ years of Python experience
+- Experience with AWS...
+"></textarea>
+            
+            <div class="flex justify-between items-center mt-2">
+                <span id="char-count" class="text-sm text-slate-500">0 characters</span>
+                <span class="text-xs text-slate-500">Tip: Include the full JD including requirements</span>
+            </div>
+            
+            <!-- Detected Keywords (cosmetic) -->
+            <div id="jd-keywords" class="mt-4 hidden">
+                <p class="text-sm text-slate-400 mb-2">Detected keywords:</p>
+                <div id="keywords-list" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section B: Options -->
+    <div class="bg-slate-800 rounded-xl p-4 border border-slate-700 mb-8">
+        <div class="flex flex-wrap items-center gap-6">
+            <!-- Cover Letter Toggle -->
+            <label class="flex items-center space-x-3 cursor-pointer">
+                <input type="checkbox" id="generate-cover-letter" class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-800">
+                <span class="text-slate-300">Generate Cover Letter</span>
+            </label>
+            
+            <!-- Tone Dropdown -->
+            <div class="flex items-center space-x-2">
+                <label class="text-slate-300">Tone:</label>
+                <select id="tone-select" class="bg-slate-700 border border-slate-600 rounded px-3 py-1 text-slate-100 focus:outline-none focus:border-indigo-500">
+                    <option value="professional">Professional</option>
+                    <option value="enthusiastic">Enthusiastic</option>
+                    <option value="conservative">Conservative</option>
+                    <option value="uploaded_pdf_style">Uploaded PDF Style</option>
+                </select>
+            </div>
+            
+            <!-- Info tooltip -->
+            <div class="relative group ml-auto">
+                <svg class="w-5 h-5 text-slate-500 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="absolute right-0 w-64 p-2 bg-slate-700 rounded-lg shadow-xl text-sm text-slate-300 hidden group-hover:block z-10">
+                    <p><strong>Professional:</strong> Standard business tone</p>
+                    <p><strong>Enthus:</strong> More energetic and eager</p>
+                    <p><strong>Conservative:</strong> More formal and reserved</p>
+                    <p><strong>Uploaded PDF Style:</strong> Mirrors the uploaded resume's existing voice and density while tailoring to the JD.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section C: Generate Button -->
+    <button 
+        id="generate-btn" 
+        class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-all flex items-center justify-center space-x-2 mb-8"
+        disabled
+    >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+        <span>Tailor My Resume</span>
+    </button>
+    
+    <!-- Loading State -->
+    <div id="loading-state" class="hidden mb-8">
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+            <div class="flex items-center justify-center mb-4">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            </div>
+            <p id="loading-text" class="text-center text-slate-300 mb-4">Analyzing Job Description...</p>
+            <div class="w-full bg-slate-700 rounded-full h-2">
+                <div id="progress-bar" class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Section D: Results -->
+    <div id="results-section" class="hidden">
+        <!-- Tabs -->
+        <div class="flex border-b border-slate-700 mb-6">
+            <button class="tab-btn px-6 py-3 text-indigo-400 border-b-2 border-indigo-500 font-medium" data-tab="resume">
+                Your Tailored Resume
+            </button>
+            <button class="tab-btn px-6 py-3 text-slate-400 hover:text-white" data-tab="ats">
+                ATS Score
+            </button>
+            <button class="tab-btn px-6 py-3 text-slate-400 hover:text-white" data-tab="diff">
+                What Changed
+            </button>
+            <button class="tab-btn px-6 py-3 text-slate-400 hover:text-white hidden" data-tab="cover">
+                Cover Letter
+            </button>
+        </div>
+        
+        <!-- Tab Contents -->
+        <!-- Resume Tab -->
+        <div id="tab-resume" class="tab-content">
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Generated Resume</h3>
+                    <div class="space-x-2">
+                        <button id="download-pdf" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            <span>Download PDF</span>
+                        </button>
+                        <button id="download-cover" class="bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded-lg hidden">
+                            Download Cover Letter
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- PDF Preview -->
+                <div class="rounded-lg overflow-hidden border border-slate-600">
+                    <canvas id="result-pdf-canvas" class="w-full"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ATS Score Tab -->
+        <div id="tab-ats" class="tab-content hidden">
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <!-- Before Score -->
+                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
+                    <h4 class="text-lg font-medium text-slate-400 mb-4">Before Tailoring</h4>
+                    <div class="relative w-32 h-32 mx-auto">
+                        <svg class="w-32 h-32 transform -rotate-90">
+                            <circle cx="64" cy="64" r="56" stroke="#374151" stroke-width="8" fill="none"></circle>
+                            <circle id="score-before-circle" cx="64" cy="64" r="56" stroke-width="8" fill="none" stroke-linecap="round" class="text-slate-500" stroke-dasharray="351.86" stroke-dashoffset="351.86"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="score-before" class="text-4xl font-bold">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- After Score -->
+                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
+                    <h4 class="text-lg font-medium text-slate-400 mb-4">After Tailoring</h4>
+                    <div class="relative w-32 h-32 mx-auto">
+                        <svg class="w-32 h-32 transform -rotate-90">
+                            <circle cx="64" cy="64" r="56" stroke="#374151" stroke-width="8" fill="none"></circle>
+                            <circle id="score-after-circle" cx="64" cy="64" r="56" stroke-width="8" fill="none" stroke-linecap="round" class="text-emerald-500" stroke-dasharray="351.86" stroke-dashoffset="351.86"></circle>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="score-after" class="text-4xl font-bold">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Keywords Added -->
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-6">
+                <h4 class="text-lg font-medium mb-4">Keywords Added</h4>
+                <div id="keywords-added" class="flex flex-wrap gap-2"></div>
+            </div>
+            
+            <!-- Keywords Missing -->
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-6">
+                <h4 class="text-lg font-medium mb-4">Keywords Missing</h4>
+                <div id="keywords-missing" class="flex flex-wrap gap-2"></div>
+            </div>
+            
+            <!-- Skills Gap -->
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                <h4 class="text-lg font-medium mb-4">Skills Gap Analysis</h4>
+                <p class="text-slate-400 mb-4">These skills are in the JD but not in your resume:</p>
+                <div id="skills-gap" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+        
+        <!-- Diff Tab -->
+        <div id="tab-diff" class="tab-content hidden">
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">What Changed</h3>
+                    <span id="changes-summary" class="text-slate-400"></span>
+                </div>
+                <div id="diff-content" class="font-mono text-sm"></div>
+            </div>
+        </div>
+        
+        <!-- Cover Letter Tab -->
+        <div id="tab-cover" class="tab-content hidden">
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Generated Cover Letter</h3>
+                    <div class="space-x-2">
+                        <button id="copy-cover" class="bg-slate-600 hover:bg-slate-500 text-white px-4 py-2 rounded-lg">
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                </div>
+                <div id="cover-letter-content" class="prose prose-invert max-w-none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pdf_preview.js') }}"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+</script>
+{% endblock %}

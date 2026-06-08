@@ -1,0 +1,9 @@
+Gtk-Runtime/
+__pycache__/
+*.pyc
+.env
+uploads/
+outputs/
+history/
+format_cache/
+*.log

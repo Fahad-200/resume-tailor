@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-white mb-2">Resume History</h1>
+        <p class="text-slate-400">Your last 10 tailored resumes</p>
+    </div>
+    
+    <!-- History List -->
+    <div id="history-list" class="space-y-4">
+        <!-- Loading -->
+        <div id="history-loading" class="text-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
+            <p class="text-slate-400 mt-4">Loading history...</p>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="history-empty" class="hidden text-center py-16">
+            <svg class="w-24 h-24 mx-auto text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-xl font-medium text-slate-300 mb-2">No tailored resumes yet</h3>
+            <p class="text-slate-400 mb-6">Go tailor your first resume!</p>
+            <a href="/" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg inline-block">
+                Tailor a Resume
+            </a>
+        </div>
+        
+        <!-- History Items -->
+        <div id="history-items" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-slate-800 rounded-xl p-6 max-w-md border border-slate-700">
+        <h3 class="text-xl font-semibold mb-4">Delete Resume?</h3>
+        <p class="text-slate-400 mb-6">This will permanently delete this tailored resume and its files.</p>
+        <div class="flex justify-end space-x-3">
+            <button id="cancel-delete" class="px-4 py-2 text-slate-300 hover:text-white">Cancel</button>
+            <button id="confirm-delete" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg">Delete</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Load history on page load
+    document.addEventListener('DOMContentLoaded', loadHistory);
+    
+    function loadHistory() {
+        fetch('/api/history')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('history-loading').classList.add('hidden');
+                
+                if (data.length === 0) {
+                    document.getElementById('history-empty').classList.remove('hidden');
+                    return;
+                }
+                
+                const itemsContainer = document.getElementById('history-items');
+                data.forEach(item => {
+                    const card = createHistoryCard(item);
+                    itemsContainer.appendChild(card);
+                });
+            })
+            .catch(err => {
+                console.error('Failed to load history:', err);
+                document.getElementById('history-loading').innerHTML = '<p class="text-rose-400">Failed to load history</p>';
+            });
+    }
+    
+    function createHistoryCard(item) {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-800 rounded-xl p-5 border border-slate-700';
+        
+        const date = new Date(item.timestamp);
+        const relativeTime = getRelativeTime(date);
+        
+        card.innerHTML = `
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <h3 class="font-semibold text-white">${item.job_title || 'Unknown Position'}</h3>
+                    <p class="text-sm text-slate-400">${item.company_name || 'Unknown Company'}</p>
+                </div>
+                <span class="text-xs text-slate-500">${relativeTime}</span>
+            </div>
+            
+            <div class="flex items-center mb-4">
+                <div class="flex-1">
+                    <span class="text-2xl font-bold text-slate-400">${item.ats_score_before || 0}</span>
+                    <span class="text-slate-500 mx-1">→</span>
+                    <span class="text-2xl font-bold ${getScoreColor(item.ats_score_after)}">${item.ats_score_after || 0}</span>
+                </div>
+                <span class="text-sm text-slate-500">ATS Score</span>
+            </div>
+            
+            <div class="mb-4">
+                <span class="text-xs text-slate-500">Keywords Added: </span>
+                <span class="text-sm text-emerald-400">${item.keywords_added?.length || 0}</span>
+            </div>
+            
+            <div class="flex space-x-2">
+                <a href="/download/${item.output_file_id}" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2 rounded-lg text-sm">
+                    Download
+                </a>
+                <button onclick="confirmDelete('${item.history_id}')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        
+        return card;
+    }
+    
+    function getRelativeTime(date) {
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 60) return `${minutes} minutes ago`;
+        if (hours < 24) return `${hours} hours ago`;
+        if (days < 7) return `${days} days ago`;
+        return date.toLocaleDateString();
+    }
+    
+    function getScoreColor(score) {
+        if (score >= 71) return 'text-emerald-400';
+        if (score >= 41) return 'text-amber-400';
+        return 'text-rose-400';
+    }
+    
+    let deleteTargetId = null;
+    
+    function confirmDelete(historyId) {
+        deleteTargetId = historyId;
+        document.getElementById('delete-modal').classList.remove('hidden');
+    }
+    
+    document.getElementById('cancel-delete').addEventListener('click', () => {
+        deleteTargetId = null;
+        document.getElementById('delete-modal').classList.add('hidden');
+    });
+    
+    document.getElementById('confirm-delete').addEventListener('click', () => {
+        if (deleteTargetId) {
+            fetch(`/api/history/${deleteTargetId}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to delete');
+                    }
+                });
+        }
+        document.getElementById('delete-modal').classList.add('hidden');
+    });
+</script>
+{% endblock %}

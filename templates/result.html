@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Results Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-white mb-2">Your Tailored Resume</h1>
+        <p class="text-slate-400">Here are your results</p>
+    </div>
+    
+    <!-- Tabs -->
+    <div class="flex border-b border-slate-700 mb-6">
+        <button class="tab-btn px-6 py-3 text-indigo-400 border-b-2 border-indigo-500 font-medium" data-tab="resume">
+            Resume
+        </button>
+        <button class="tab-btn px-6 py-3 text-slate-400 hover:text-white" data-tab="ats">
+            ATS Score
+        </button>
+        <button class="tab-btn px-6 py-3 text-slate-400 hover:text-white" data-tab="diff">
+            Changes
+        </button>
+        <button class="tab-btn px-6 py-3 text-slate-400 hover:text-white" data-tab="cover">
+            Cover Letter
+        </button>
+    </div>
+    
+    <!-- Tab Contents -->
+    <div id="tab-resume" class="tab-content">
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Generated Resume</h3>
+                <a id="download-pdf" href="#" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Download PDF</span>
+                </a>
+            </div>
+            <div class="rounded-lg overflow-hidden border border-slate-600">
+                <canvas id="result-pdf-canvas" class="w-full"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div id="tab-ats" class="tab-content hidden">
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
+                <h4 class="text-lg font-medium text-slate-400 mb-4">Before</h4>
+                <div class="relative w-32 h-32 mx-auto">
+                    <svg class="w-32 h-32 transform -rotate-90">
+                        <circle cx="64" cy="64" r="56" stroke="#374151" stroke-width="8" fill="none"></circle>
+                        <circle id="score-before-circle" cx="64" cy="64" r="56" stroke-width="8" fill="none" stroke-linecap="round" class="text-slate-500" stroke-dasharray="351.86" stroke-dashoffset="351.86"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="score-before" class="text-4xl font-bold">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
+                <h4 class="text-lg font-medium text-slate-400 mb-4">After</h4>
+                <div class="relative w-32 h-32 mx-auto">
+                    <svg class="w-32 h-32 transform -rotate-90">
+                        <circle cx="64" cy="64" r="56" stroke="#374151" stroke-width="8" fill="none"></circle>
+                        <circle id="score-after-circle" cx="64" cy="64" r="56" stroke-width="8" fill="none" stroke-linecap="round" class="text-emerald-500" stroke-dasharray="351.86" stroke-dashoffset="351.86"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="score-after" class="text-4xl font-bold">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-6">
+            <h4 class="text-lg font-medium mb-4">Keywords Added</h4>
+            <div id="keywords-added" class="flex flex-wrap gap-2"></div>
+        </div>
+        
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+            <h4 class="text-lg font-medium mb-4">Skills Gap</h4>
+            <div id="skills-gap" class="flex flex-wrap gap-2"></div>
+        </div>
+    </div>
+    
+    <div id="tab-diff" class="tab-content hidden">
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+            <div id="diff-content" class="font-mono text-sm"></div>
+        </div>
+    </div>
+    
+    <div id="tab-cover" class="tab-content hidden">
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+            <div id="cover-letter-content" class="prose prose-invert max-w-none"></div>
+        </div>
+    </div>
+    
+    <!-- Back Button -->
+    <div class="mt-8 text-center">
+        <a href="/" class="text-indigo-400 hover:text-indigo-300">Create another tailored resume</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+</script>
+{% endblock %}

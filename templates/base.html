@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResumeAI — Job Tailoring</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Diff2html CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-slate-800 border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span class="text-xl font-bold">ResumeAI</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Tailor Resume
+                    </a>
+                    <a href="/history" class="text-slate-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    <div id="flash-messages" class="fixed top-20 right-4 z-50 space-y-2"></div>
+    
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="system-status-cta">
+            <div>
+                <p class="system-status-kicker">Protected Diagnostics</p>
+                <h2 class="system-status-title">Check whether all systems are working or if anything looks degraded.</h2>
+                <p class="system-status-copy">This checks the local app, PDF editing pipeline, one-time upload cleanup mode, and a live Gemini probe.</p>
+            </div>
+            <button id="open-system-status" class="system-status-button" type="button">
+                All Systems & Outages
+            </button>
+        </div>
+    </footer>
+
+    <div id="system-status-modal" class="hidden system-status-modal">
+        <div class="system-status-overlay" data-close-system-status="true"></div>
+        <div class="system-status-panel">
+            <div class="flex items-start justify-between gap-4 mb-6">
+                <div>
+                    <p class="system-status-kicker">Secure Access</p>
+                    <h3 class="text-2xl font-semibold text-white">System Status</h3>
+                    <p class="text-slate-400 mt-2">Enter your password to run the protected systems and outage check.</p>
+                </div>
+                <button id="close-system-status" class="text-slate-400 hover:text-white text-2xl leading-none" type="button">&times;</button>
+            </div>
+
+            <div class="space-y-4">
+                <label class="block">
+                    <span class="text-sm text-slate-300">Password</span>
+                    <input id="system-status-password" type="password" class="system-status-input" placeholder="Enter password">
+                </label>
+
+                <div class="flex items-center gap-3">
+                    <button id="run-system-status" class="system-status-button" type="button">Run Check</button>
+                    <span id="system-status-loading" class="text-sm text-slate-400 hidden">Checking live systems...</span>
+                </div>
+
+                <p id="system-status-error" class="text-sm text-rose-400 hidden"></p>
+            </div>
+
+            <div id="system-status-summary" class="hidden mt-6 system-status-summary"></div>
+            <div id="system-status-grid" class="hidden mt-4 grid gap-4 md:grid-cols-2"></div>
+        </div>
+    </div>
+    
+    <!-- Common Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{{ url_for('static', filename='js/system_status.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
