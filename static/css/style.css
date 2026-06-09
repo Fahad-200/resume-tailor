@@ -477,6 +477,30 @@ button:focus {
     }
 }
 
+/* Accessibility: Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .loading-spinner {
+        animation: none;
+        border-color: #6366f1;
+    }
+
+    .ats-gauge-circle {
+        transition: none;
+    }
+
+    .flash-message {
+        animation: none;
+    }
+}
+
 /* Print styles for PDF */
 @media print {
     body {
