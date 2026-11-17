@@ -1,6 +1,6 @@
 # Resume Tailor — AI-Powered Resume Customization Engine
 
-> **I built this tool because I hate editing resumes.** Every job application deserves a tailored resume, but manually tweaking formatting, rewording bullet points, and matching keywords for each application is tedious and error-prone. So I automated it — an AI-powered engine that takes your resume PDF and a job description, then produces a perfectly tailored, formatted PDF — all while preserving the original design.
+> **I built this tool because I hate editing resumes and reapplying to job postings again for different positions .** Every job application deserves a tailored resume(since AI came into existence , the ATS have become so advanced and powerfull), but manually tweaking formatting, rewording bullet points, and matching keywords for each application is tedious and error-prone. So I automated it — an AI-powered engine that takes your resume PDF and a job description, then produces a perfectly tailored, formatted PDF — all while preserving the original design.
 
 > **⚠ IMPORTANT: This is a DEVELOPMENT SERVER.** It is designed for local use only (`127.0.0.1`). Do not deploy this in a production environment without adding authentication, rate limiting, and security hardening.
 
